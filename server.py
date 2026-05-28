@@ -1,4 +1,9 @@
 import socket
+import os
+
+#variable global :
+#path de la ressource
+RESOURCE_PATH = "data/resource.txt"
 
 # créé l'objet socket le socket_écoute sert a écouter et acceter les nouveau client
 socket_ecoute = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -31,6 +36,7 @@ lignes = headers.split("\r\n")
 #variable qui contient les data de la requete
 request_line = lignes[0]
 print(request_line)
+print("============")
 
 #découpe la request_line pour récupéré les valeurs method, path, version
 parts = request_line.split() # utilise les espace entre les valeurs pour les split
@@ -45,15 +51,44 @@ else:
   print(f"Chemein du fichier :", path)
   print(f"Version HTTP :", version)
 
-""" response = (
-    "HTTP/1.1 200 OK\r\n"
-    "Content-Length: 2\r\n"
+# methode GET 
+# le if qui vérifie si le fichier existe et créé les status et body encoder
+if path != "/file":
+  status = "404 Not Found"
+  body = b"Erreur de path"
+  
+elif not os.path.isfile(RESOURCE_PATH) :
+  print("============")
+  status = "404 Not Found"
+  body = b"fichier introuvable"
+  
+else:
+  status = "200 OK"
+  print("============")
+  print(f"{RESOURCE_PATH} existe.")
+  
+  f = open(RESOURCE_PATH, 'rb')
+  body = f.read()
+  print("============")
+  print(body)
+  f.close()
+
+content_length = len(body)
+
+#variable des header
+headers = (
+    f"HTTP/1.1 {status}\r\n"
+    f"Content-Length: {content_length}\r\n"
     "Connection: close\r\n"
     "\r\n"
-    "OK"
 )
 
-client_socket.sendall(response.encode()) """
+#variable qui change les headers string en bytes pour les mettre dans la response du get
+headers_bytes = headers.encode()
+#créé la réponse en bytes
+response = headers_bytes + body
+#send la response
+client_socket.sendall(response)
 
 
 client_socket.close()
