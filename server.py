@@ -83,6 +83,7 @@ while True:
     else:
       status = "200 OK"
       print("============")
+      print("============")
       print(f"{RESOURCE_PATH} existe.")
       
       f = open(RESOURCE_PATH, 'rb')
