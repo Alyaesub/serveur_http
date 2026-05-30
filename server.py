@@ -79,7 +79,7 @@ while True:
       print(body)
       f.close()
   
-  #methode PUT qui verifi si le fichier existe qui le créé si absent et met le body en contenue
+  #methode POST qui verifi si le fichier existe qui le créé si absent et met le body en contenue
   elif methode == "POST":
     if path != "/file":
       status = "404 Not Found"
@@ -101,6 +101,53 @@ while True:
       print(request_body)
       f.close()
       body = b"created\n"
+  
+  #methode PUT qui met a jour le contenue de ressour.txt avec le contenu du body et si le fichier existe pas il le créé
+  elif methode == "PUT":
+    if path != "/file":
+      status = "404 Not Found"
+      body = b"Erreur de path"
+    
+    elif os.path.isfile(RESOURCE_PATH) :#si le fichier exoste jiste mettre a jour le body
+      print("============")
+      f = open(RESOURCE_PATH, 'w')
+      f.write(request_body)
+      print("============")
+      print(request_body)
+      f.close()
+      status = "200 OK"
+      body = b"fichier updated\n"
+    
+    else:#si le fichier existe pas le créé et mettre le body en content
+      status = "201 Created"
+      print("============")
+      print(f"le fichier : {RESOURCE_PATH}, a était créé avec success .")
+      
+      f = open(RESOURCE_PATH, 'w')
+      f.write(request_body)
+      print("============")
+      print(request_body)
+      f.close()
+      body = b"created\n"
+  
+  #methode delet qui supp le fichier
+  elif methode == "DELETE":
+    # le if qui vérifie si le fichier existe 
+    if path != "/file":
+      status = "404 Not Found"
+      body = b"Erreur de path"
+    
+    elif not os.path.isfile(RESOURCE_PATH) :
+      print("============")
+      status = "404 Not Found"
+      body = b"fichier introuvable"
+    
+    else:
+      status = "200 OK"
+      print("============")
+      os.remove(RESOURCE_PATH)
+      print(f"{RESOURCE_PATH} supprimé avec successé.")
+      body = b"deleted\n"
   
   else:
     status = "405 Method Not Allowed"
