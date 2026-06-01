@@ -1,10 +1,15 @@
 import socket
 import os
+from utils import (
+  not_found,
+  bad_request_respons
+  )
+
 
 #variable global :
 
 #path de la ressource
-RESOURCE_PATH = "data/resource.txt"
+RESOURCE_PATH = "server/data/resource.txt"
 
 # création du serveur :
 
@@ -73,8 +78,7 @@ while True:
   elif methode == "GET":
     # le if qui vérifie si le fichier existe et créé les status et body encoder
     if path != "/file":
-      status = "404 Not Found"
-      body = b"Erreur de path"
+      status, body = not_found() #appel de la fonction
     
     elif not os.path.isfile(RESOURCE_PATH) :
       status = "404 Not Found"
@@ -99,8 +103,7 @@ while True:
       body = b"Erreur de path"
     
     elif request_body == "": #empeche la requet avec un body vide
-      status = "400 Bad Request"
-      body = b"Bad Request, aucune ressource\n"
+      status, body = bad_request_respons() #appel de la function bad request
     
     elif os.path.exists(RESOURCE_PATH) :
       print("============")
