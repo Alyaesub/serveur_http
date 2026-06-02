@@ -4,7 +4,7 @@ from utils import (
   not_found,
   bad_request_respons
   )
-from handlers import (
+from server.handlers_serv import (
   handle_get,
   handle_post,
   handle_put,
@@ -70,7 +70,7 @@ while True:
       print(f"Chemein du fichier :", path)
       print(f"Version HTTP :", version)
 
-  # IF pour chosir la mathode demander par le client (plus tard en switch/case)
+  # IF pour chosir la mathode demander par le client
   if bad_request:
     pass # si bad_request == True alors on saute les methode et on envoie direct la respons avec les header de la bad_request
   
