@@ -1,6 +1,7 @@
 import socket
 from handler_client import (
-  parse_response
+  parse_response,
+  build_request
 )
 
 # variable globale
@@ -14,11 +15,12 @@ socket_client.connect((HOST, PORT))
 
 #construit la requete HTTP
 request = (
-  "GET /file HTTP/1.1\r\n"
-  "Host: localhost\r\n"
-  "Connection: close\r\n"
-  "\r\n"
+  build_request("PUT", "/file", "teste post depuis client 3")
 )
+
+print("=====Request envoyé=====")
+print(request)
+print("========================")
 
 #envoie la requet en byte via TCP
 socket_client.sendall(request.encode())

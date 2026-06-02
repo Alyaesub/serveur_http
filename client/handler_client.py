@@ -26,4 +26,21 @@ def parse_response(response):
   print("Headers :", headers)
   print("Body :", body)
 
-#function qui construit la requet HTTP
+#function qui construit la requet HTTP en fonction des methode
+def build_request(method, path, body=""):
+  request = ""
+  content_length = len(body)
+  
+  request += f"{method} {path} HTTP/1.1\r\n"
+  request += "Host: localhost\r\n"
+  
+  if body != "":
+    request += f"Content-length: {content_length}\r\n"
+  
+  request += "Connection: close\r\n"
+  request += "\r\n"
+  
+  if body != "":
+    request += body
+  
+  return request

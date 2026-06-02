@@ -4,7 +4,7 @@ from utils import (
   not_found,
   bad_request_respons
   )
-from server.handlers_serv import (
+from handlers_serv import (
   handle_get,
   handle_post,
   handle_put,
