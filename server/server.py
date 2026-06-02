@@ -4,12 +4,12 @@ from utils import (
   not_found,
   bad_request_respons
   )
-
-
-#variable global :
-
-#path de la ressource
-RESOURCE_PATH = "server/data/resource.txt"
+from handlers import (
+  handle_get,
+  handle_post,
+  handle_put,
+  handle_delete
+)
 
 # création du serveur :
 
@@ -37,8 +37,8 @@ while True:
   
   if "\r\n\r\n" not in text: #vérifie que les header sont bien fini et coup par "\r\n\r\n" pour split sinon bd request
     bad_request = True
-    status = "400 Bad Request"
-    body = b"Bad Request\n"
+    status, body = bad_request_respons()
+
   else:
     # coupe et séparre les headers du body de la requet client
     headers, request_body = text.split("\r\n\r\n", 1) # le 1 veut dire coupe une seul fois au premier sépparateurs "\r\n\r\n" au cas ou il y en aurait d'autre dans le body
@@ -60,8 +60,7 @@ while True:
     #verifie qu'il y a bien les 3 valeurs et stop le programme si 404 bad request
     if len(parts) != 3:
       bad_request = True
-      status = "400 Bad Request"
-      body = b"Bad Request\n"
+      status, body = bad_request_respons()
     else:
       methode = parts[0]
       path = parts[1]
@@ -74,104 +73,22 @@ while True:
   # IF pour chosir la mathode demander par le client (plus tard en switch/case)
   if bad_request:
     pass # si bad_request == True alors on saute les methode et on envoie direct la respons avec les header de la bad_request
+  
   # methode GET 
   elif methode == "GET":
-    # le if qui vérifie si le fichier existe et créé les status et body encoder
-    if path != "/file":
-      status, body = not_found() #appel de la fonction
-    
-    elif not os.path.isfile(RESOURCE_PATH) :
-      status = "404 Not Found"
-      body = b"fichier introuvable"
-    
-    else:
-      status = "200 OK"
-      print("============")
-      print("============")
-      print(f"{RESOURCE_PATH} existe.")
-      
-      f = open(RESOURCE_PATH, 'rb')
-      body = f.read()
-      print("============")
-      print(body)
-      f.close()
+    status, body = handle_get(path)
   
   #methode POST qui verifi si le fichier existe qui le créé si absent et met le body en contenue
   elif methode == "POST":
-    if path != "/file":
-      status = "404 Not Found"
-      body = b"Erreur de path"
-    
-    elif request_body == "": #empeche la requet avec un body vide
-      status, body = bad_request_respons() #appel de la function bad request
-    
-    elif os.path.exists(RESOURCE_PATH) :
-      print("============")
-      status = "409 Conflict"
-      body = b"fichier deja existant"
-    
-    else:
-      status = "201 Created"
-      print("============")
-      print(f"le fichier : {RESOURCE_PATH}, a était créé avec success .")
-      
-      f = open(RESOURCE_PATH, 'w')
-      f.write(request_body)
-      print("======Request_body POST======")
-      print(request_body)
-      f.close()
-      body = b"created\n"
+    status, body = handle_post(path, request_body)
   
   #methode PUT qui met a jour le contenue de ressour.txt avec le contenu du body et si le fichier existe pas il le créé
   elif methode == "PUT":
-    if path != "/file":
-      status = "404 Not Found"
-      body = b"Erreur de path"
-    
-    elif request_body == "": #empeche la requet avec un body vide
-      status = "400 Bad Request"
-      body = b"Bad Request, aucune ressource\n"
-    
-    elif os.path.isfile(RESOURCE_PATH) :#si le fichier exoste jiste mettre a jour le body
-      status = "200 OK"
-      print("============")
-      f = open(RESOURCE_PATH, 'w')
-      f.write(request_body)
-      print("======Request_body PUT======")
-      print(request_body)
-      f.close()
-      body = b"fichier updated\n"
-    
-    else:#si le fichier existe pas le créé et mettre le body en content
-      status = "201 Created"
-      print("============")
-      print(f"le fichier : {RESOURCE_PATH}, a était créé avec success .")
-      
-      f = open(RESOURCE_PATH, 'w')
-      f.write(request_body)
-      print("=====Request_body PUT=======")
-      print(request_body)
-      f.close()
-      body = b"created\n"
+    status, body = handle_put(path, request_body)
   
   #methode delet qui supp le fichier
   elif methode == "DELETE":
-    # le if qui vérifie si le fichier existe 
-    if path != "/file":
-      status = "404 Not Found"
-      body = b"Erreur de path"
-    
-    elif not os.path.isfile(RESOURCE_PATH) :
-      print("============")
-      status = "404 Not Found"
-      body = b"fichier introuvable"
-    
-    else:
-      status = "200 OK"
-      os.remove(RESOURCE_PATH)
-      print("=====Request_delet=======")
-      print(f"{RESOURCE_PATH} supprimé avec successé.")
-      body = b"deleted\n"
+    status, body = handle_delete(path)
   
   else:
     status = "405 Method Not Allowed"
