@@ -1,4 +1,5 @@
 import socket
+import os
 import sys
 from handler_client import (
   parse_response,
@@ -6,8 +7,8 @@ from handler_client import (
 )
 
 # variable globale
-HOST = "127.0.0.1"
-PORT = 8888
+HOST = os.getenv("HOST", "127.0.0.1")
+PORT = int(os.getenv("PORT", 8888))
 
 #créé le socket coter client
 socket_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
