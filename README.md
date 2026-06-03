@@ -1,194 +1,347 @@
 # Serveur HTTP / Client HTTP TCP
 
-Projet réalisé dans le cadre du module Réseau formation ZeroDay.
+Projet réalisé dans le cadre du module Réseau de la formation ZeroDay.
 
 ## Objectif
 
-Développer :
+Développer un serveur HTTP et un client HTTP qui communiquent directement avec des sockets TCP, sans framework.
 
-- un serveur HTTP
-- un client HTTP
+Le but du projet est de comprendre concrètement :
 
-qui communiquent exclusivement via une socket TCP, sans framework.
-
-L'objectif est de comprendre :
-
-- TCP
-- HTTP
-- les sockets
-- le modèle client / serveur
-- le parsing manuel des requêtes et réponses HTTP
+- le fonctionnement d’un serveur TCP ;
+- le rôle d’un client TCP ;
+- la structure d’une requête HTTP ;
+- la structure d’une réponse HTTP ;
+- le parsing manuel des headers et du body ;
+- les méthodes HTTP utilisées pour un CRUD simple.
 
 ---
 
-# Fonctionnalités
-
-## Serveur HTTP
-
-ressource locale :
+## Architecture du projet
 
 ```txt
-data/resource.txt
+SERVEUR_HTTP/
+├── client/
+│   ├── client.py
+│   └── handler_client.py
+│
+├── server/
+│   ├── data/
+│   │   └── resource.txt
+│   ├── handlers_serv.py
+│   ├── server.py
+│   └── utils.py
+│
+└── README.md
 ```
 
-et implémente les opérations CRUD.
+---
+
+## Fonctionnement général
+
+Le serveur écoute sur le port `8888`.
+
+Le client se connecte au serveur via TCP, construit une requête HTTP manuellement, l’envoie au serveur, puis lit et affiche la réponse.
+
+Le serveur manipule une ressource locale :
+
+```txt
+server/data/resource.txt
+```
+
+---
+
+## Lancer le serveur
+
+Depuis la racine du projet :
+
+```bash
+python3 server/server.py
+```
+
+Le serveur écoute sur :
+
+```txt
+127.0.0.1:8888
+```
+
+En Docker, il devra écouter sur :
+
+```txt
+0.0.0.0:8888
+```
+
+---
+
+## Utiliser le client
+
+Depuis la racine du projet :
 
 ### GET
 
-Lecture du contenu de la ressource.
+Lire la ressource :
 
-Réponse :
-
-```http
-200 OK
+```bash
+python3 client/client.py get
 ```
-
-ou
-
-```http
-404 Not Found
-```
-
----
 
 ### POST
 
-Création de la ressource.
+Créer la ressource avec un body :
 
-Réponses :
-
-```http
-201 Created
+```bash
+python3 client/client.py post "hello"
 ```
-
-```http
-409 Conflict
-```
-
-```http
-400 Bad Request
-```
-
----
 
 ### PUT
 
-Mise à jour complète de la ressource.
+Remplacer le contenu de la ressource :
 
-Réponses :
-
-```http
-200 OK
+```bash
+python3 client/client.py put "nouveau contenu"
 ```
-
-```http
-201 Created
-```
-
-```http
-400 Bad Request
-```
-
----
 
 ### DELETE
 
-Suppression de la ressource.
+Supprimer la ressource :
 
-Réponses :
-
-```http
-200 OK
-```
-
-```http
-404 Not Found
+```bash
+python3 client/client.py delete
 ```
 
 ---
 
-# Gestion des erreurs
+## Méthodes HTTP gérées
 
-Le serveur gère notamment :
+### GET
 
-```http
+Lit le contenu de la ressource.
+
+Réponses possibles :
+
+```txt
+200 OK
+404 Not Found
+```
+
+### POST
+
+Crée la ressource si elle n’existe pas.
+
+Réponses possibles :
+
+```txt
+201 Created
+409 Conflict
 400 Bad Request
 ```
 
-- requête HTTP invalide
-- body absent sur POST / PUT
-- Request-Line invalide
+### PUT
 
-```http
+Remplace le contenu de la ressource.
 
+Réponses possibles :
+
+```txt
+200 OK
+201 Created
+400 Bad Request
+```
+
+### DELETE
+
+Supprime la ressource.
+
+Réponses possibles :
+
+```txt
+200 OK
 404 Not Found
 ```
 
-- mauvais path
-- ressource absente
+---
 
-```http
+## Erreurs gérées côté serveur
+
+Le serveur gère plusieurs erreurs HTTP :
+
+```txt
+400 Bad Request
+```
+
+Cas possibles :
+
+- requête mal formée ;
+- absence de séparation `\r\n\r\n` ;
+- Request-Line invalide ;
+- body absent sur POST ou PUT.
+
+```txt
+404 Not Found
+```
+
+Cas possibles :
+
+- mauvais path ;
+- fichier absent.
+
+```txt
 405 Method Not Allowed
 ```
 
-- méthode non supportée
+Cas possible :
 
-```http
+- méthode HTTP non supportée.
+
+```txt
 409 Conflict
 ```
 
-- POST sur une ressource déjà existante
+Cas possible :
+
+- POST sur une ressource qui existe déjà.
 
 ---
 
-### server.py
+## Affichage côté client
 
-Responsable de :
+Le client affiche au minimum :
 
-- la création du serveur TCP
-- l'écoute des connexions
-- la réception des requêtes
-- le parsing HTTP
-- le dispatch des méthodes HTTP
+- le status code ;
+- les headers reçus ;
+- le body de la réponse.
 
-### handlers.py
+Exemple :
 
-Contient les handlers :
+```txt
+Status code: 200
 
-```python
-handle_get()
-handle_post()
-handle_put()
-handle_delete()
-```
+Headers:
+HTTP/1.1 200 OK
+Content-Length: 5
+Connection: close
 
-Responsables de la logique CRUD.
-
-### utils.py
-
-Fonctions utilitaires :
-
-```python
-not_found()
-bad_request_response()
-...
-```
-
-### data/
-
-Contient la ressource manipulée par le serveur :
-
-```
-resource.txt
+Body:
+hello
 ```
 
 ---
 
-# Technologies utilisées
+## Scénarios de test
+
+### 1. GET avant création
+
+```bash
+python3 client/client.py get
+```
+
+Résultat attendu :
+
+```txt
+404 Not Found
+```
+
+### 2. POST avec body
+
+```bash
+python3 client/client.py post "abc"
+```
+
+Résultat attendu :
+
+```txt
+201 Created
+```
+
+### 3. GET après POST
+
+```bash
+python3 client/client.py get
+```
+
+Résultat attendu :
+
+```txt
+200 OK
+Body: abc
+```
+
+### 4. POST une seconde fois
+
+```bash
+python3 client/client.py post "def"
+```
+
+Résultat attendu :
+
+```txt
+409 Conflict
+```
+
+### 5. PUT pour remplacer le contenu
+
+```bash
+python3 client/client.py put "nouveau contenu"
+```
+
+Résultat attendu :
+
+```txt
+200 OK
+```
+
+ou :
+
+```txt
+201 Created
+```
+
+si le fichier n’existait pas encore.
+
+### 6. DELETE
+
+```bash
+python3 client/client.py delete
+```
+
+Résultat attendu :
+
+```txt
+200 OK
+```
+
+### 7. GET après DELETE
+
+```bash
+python3 client/client.py get
+```
+
+Résultat attendu :
+
+```txt
+404 Not Found
+```
+
+---
+
+## Technologies utilisées
 
 - Python 3
 - Sockets TCP
-- HTTP 1.1
-- Manipulation de fichiers locaux
+- HTTP/1.1
+- Lecture et écriture de fichiers locaux
+- CLI simple avec `sys.argv`
 
 ---
+
+## Dockerisation
+
+La dockerisation sera ajoutée dans une étape suivante.
+
+Objectifs Docker :
+
+- lancer le serveur dans un conteneur ;
+- lancer le client dans un conteneur ;
+- exposer le port `8888` ;
+- utiliser un volume ou un dossier `/data` pour stocker la ressource ;
+- permettre les tests depuis l’hôte.

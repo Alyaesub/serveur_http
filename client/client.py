@@ -18,8 +18,11 @@ socket_client.connect((HOST, PORT))
 
 #if qui verifie si ya bien au moins 2 argv
 if len(sys.argv) < 2:
-  print("Usage :")
-  print("python3 client/client.py + methode + body")
+  print("Usage:")
+  print("  python client.py get")
+  print("  python client.py delete")
+  print('  python client.py post "abc"')
+  print('  python client.py put "nouveau contenu"')
   sys.exit(1)
 
 #variable sys pour commande cli
