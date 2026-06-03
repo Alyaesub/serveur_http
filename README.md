@@ -25,7 +25,7 @@ L'objectif est de comprendre :
 
 ## Serveur HTTP
 
-Le serveur gère une ressource locale :
+ressource locale :
 
 ```txt
 data/resource.txt
