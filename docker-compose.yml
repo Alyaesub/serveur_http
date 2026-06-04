@@ -1,0 +1,19 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./server/data:/app/server/data
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    environment:
+      - HOST=server
+      - PORT=8888
+    depends_on:
+      - server
